@@ -1,0 +1,38 @@
+name: gwyzpclgj
+
+services:
+  proxy:
+    image: nginx:latest
+    restart: always
+    volumes:
+      - ./proxy/volumes/config/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./proxy/volumes/config/default.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./proxy/volumes/config/ssl.conf:/etc/nginx/conf.d/ssl.conf:ro
+      - ./proxy/volumes/config/ssl-params.conf:/etc/nginx/conf.d/ssl-params.conf:ro
+      - ./ssl/volumes/dhparam.pem:/etc/ssl/certs/dhparam.pem:ro
+      - ./ssl/volumes/www:/var/www/certbot:ro
+      - ./ssl/volumes/letsencrypt:/etc/letsencrypt:ro
+    ports:
+      - '80:80'
+      - '443:443'
+    depends_on:
+      web:
+        condition: service_healthy
+
+  certbot:
+    image: certbot/certbot:latest
+    restart: 'no'
+    volumes:
+      - ./ssl/volumes/www:/var/www/certbot
+      - ./ssl/volumes/letsencrypt:/etc/letsencrypt
+    entrypoint: /bin/sh
+    command: -c 'echo certbot 容器已就绪'
+
+  web:
+    image: gwyzpclgj/web
+    restart: always
+    healthcheck:
+      test: ['CMD-SHELL', 'curl -f http://localhost:3000']
+      interval: 30s
+      timeout: 20s
+      retries: 3

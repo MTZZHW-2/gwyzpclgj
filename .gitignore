@@ -1,0 +1,13 @@
+# Node.js
+node_modules/
+
+# Uploads
+uploads/
+
+# OS
+.DS_Store
+
+# SSL
+/docker/proxy/volumes/config/ssl.conf
+/docker/proxy/volumes/config/ssl-params.conf
+/docker/ssl/volumes/

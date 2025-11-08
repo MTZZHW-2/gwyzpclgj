@@ -1,0 +1,25 @@
+{
+  "name": "gwyzpclgj",
+  "version": "1.0.0",
+  "description": "公务员照片处理工具",
+  "author": {
+    "name": "MTZZHW",
+    "email": "root@mtzzhw.com",
+    "url": "https://mtzzhw.com"
+  },
+  "license": "GPL-3.0",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "nodemon src/server.js",
+    "process": "node src/photo-processor.js"
+  },
+  "dependencies": {
+    "express": "^5.1.0",
+    "multer": "^2.0.2",
+    "sharp": "^0.34.4"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.10"
+  }
+}

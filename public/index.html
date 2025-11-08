@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>公务员照片处理工具</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI",
+          "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+      }
+
+      .container {
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        max-width: 600px;
+        width: 100%;
+        padding: 40px;
+        animation: slideUp 0.5s ease-out;
+      }
+
+      @keyframes slideUp {
+        from {
+          opacity: 0;
+          transform: translateY(30px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      h1 {
+        text-align: center;
+        color: #333;
+        margin-bottom: 10px;
+        font-size: 28px;
+      }
+
+      .subtitle {
+        text-align: center;
+        color: #666;
+        margin-bottom: 30px;
+        font-size: 14px;
+      }
+
+      .requirements {
+        background: #f8f9fa;
+        border-left: 4px solid #667eea;
+        padding: 15px;
+        margin-bottom: 30px;
+        border-radius: 5px;
+      }
+
+      .requirements h3 {
+        color: #333;
+        font-size: 16px;
+        margin-bottom: 10px;
+      }
+
+      .requirements ul {
+        list-style: none;
+        font-size: 13px;
+        color: #555;
+      }
+
+      .requirements li {
+        padding: 5px 0;
+        padding-left: 20px;
+        position: relative;
+      }
+
+      .requirements li:before {
+        content: "✓";
+        position: absolute;
+        left: 0;
+        color: #667eea;
+        font-weight: bold;
+      }
+
+      .upload-area {
+        border: 3px dashed #ddd;
+        border-radius: 15px;
+        padding: 40px;
+        text-align: center;
+        transition: all 0.3s;
+        cursor: pointer;
+        margin-bottom: 20px;
+        background: #fafafa;
+      }
+
+      .upload-area:hover {
+        border-color: #667eea;
+        background: #f0f4ff;
+      }
+
+      .upload-area.dragover {
+        border-color: #667eea;
+        background: #e8eeff;
+        transform: scale(1.02);
+      }
+
+      .upload-icon {
+        font-size: 60px;
+        margin-bottom: 20px;
+      }
+
+      .upload-text {
+        color: #666;
+        font-size: 16px;
+        margin-bottom: 10px;
+      }
+
+      .upload-hint {
+        color: #999;
+        font-size: 13px;
+      }
+
+      input[type="file"] {
+        display: none;
+      }
+
+      .btn {
+        width: 100%;
+        padding: 15px;
+        border: none;
+        border-radius: 10px;
+        font-size: 16px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: all 0.3s;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+      }
+
+      .btn-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+      }
+
+      .btn-primary:hover:not(:disabled) {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+      }
+
+      .btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+
+      .btn-secondary {
+        background: #6c757d;
+        color: white;
+        margin-bottom: 10px;
+      }
+
+      .btn-secondary:hover {
+        background: #5a6268;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 20px rgba(108, 117, 125, 0.4);
+      }
+
+      .hidden {
+        display: none;
+      }
+
+      .preview {
+        margin: 20px 0;
+        display: none;
+        text-align: center;
+      }
+
+      .preview.show {
+        display: block;
+      }
+
+      .preview img {
+        max-width: 100%;
+        border-radius: 10px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        display: inline-block;
+      }
+
+      .preview-info {
+        text-align: center;
+        margin-top: 10px;
+        color: #666;
+        font-size: 14px;
+      }
+
+      .loading {
+        display: none;
+        text-align: center;
+        padding: 20px;
+      }
+
+      .loading.show {
+        display: block;
+      }
+
+      .spinner {
+        border: 4px solid #f3f3f3;
+        border-top: 4px solid #667eea;
+        border-radius: 50%;
+        width: 50px;
+        height: 50px;
+        animation: spin 1s linear infinite;
+        margin: 0 auto 15px;
+      }
+
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+
+      .message {
+        padding: 15px;
+        border-radius: 8px;
+        margin: 15px 0;
+        display: none;
+      }
+
+      .message.show {
+        display: block;
+      }
+
+      .message.error {
+        background: #fee;
+        color: #c33;
+        border: 1px solid #fcc;
+      }
+
+      .message.success {
+        background: #efe;
+        color: #3c3;
+        border: 1px solid #cfc;
+      }
+
+      .footer {
+        text-align: center;
+        margin-top: 30px;
+        padding-top: 20px;
+        border-top: 1px solid #eee;
+        color: #999;
+        font-size: 12px;
+      }
+
+      .footer p {
+        margin-top: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .footer p:first-child {
+        margin-top: 0;
+      }
+
+      .footer a {
+        color: #667eea;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+      }
+
+      .footer a:hover {
+        opacity: 0.8;
+      }
+
+      .github-icon {
+        width: 16px;
+        height: 16px;
+        fill: #333;
+        margin-left: 5px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>📸 公务员照片处理工具</h1>
+
+      <div class="requirements">
+        <h3>📋 照片要求</h3>
+        <ul>
+          <li>本人近期免冠正面电子证件照</li>
+          <li>蓝底或白底</li>
+          <li>尺寸不低于 295×413 像素</li>
+          <li>照片不得美化、修饰</li>
+        </ul>
+      </div>
+
+      <div class="upload-area" id="uploadArea">
+        <div class="upload-icon">📤</div>
+        <div class="upload-text">点击或拖拽照片到这里</div>
+        <div class="upload-hint">支持 JPG、PNG 格式</div>
+        <input
+          type="file"
+          id="fileInput"
+          accept="image/jpeg,image/jpg,image/png"
+        />
+      </div>
+
+      <div class="preview" id="preview">
+        <img id="previewImage" src="" alt="预览" />
+        <div class="preview-info" id="previewInfo"></div>
+      </div>
+
+      <div class="message" id="message"></div>
+
+      <div class="loading" id="loading">
+        <div class="spinner"></div>
+        <div>正在处理照片，请稍候...</div>
+      </div>
+
+      <button class="btn btn-secondary hidden" id="reSelectBtn">
+        重新选择
+      </button>
+      <button class="btn btn-primary" id="processBtn" disabled>开始处理</button>
+
+      <div class="footer">
+        <p>⚠️ 照片不会存储在服务器</p>
+        <p>
+          Made with ❤️ for all Mac/Linux/Mobile users
+          <a href="https://github.com/MTZZHW-2/gwyzpclgj" target="_blank" rel="noopener noreferrer" title="GitHub 仓库">
+            <svg class="github-icon" viewBox="0 0 16 16">
+              <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"></path>
+            </svg>
+          </a>
+        </p>
+      </div>
+    </div>
+
+    <script>
+      const uploadArea = document.getElementById("uploadArea");
+      const fileInput = document.getElementById("fileInput");
+      const preview = document.getElementById("preview");
+      const previewImage = document.getElementById("previewImage");
+      const previewInfo = document.getElementById("previewInfo");
+      const processBtn = document.getElementById("processBtn");
+      const reSelectBtn = document.getElementById("reSelectBtn");
+      const loading = document.getElementById("loading");
+      const message = document.getElementById("message");
+
+      let selectedFile = null;
+
+      // 点击上传区域
+      uploadArea.addEventListener("click", () => {
+        fileInput.click();
+      });
+
+      // 文件选择
+      fileInput.addEventListener("change", (e) => {
+        handleFile(e.target.files[0]);
+      });
+
+      // 拖拽上传
+      uploadArea.addEventListener("dragover", (e) => {
+        e.preventDefault();
+        uploadArea.classList.add("dragover");
+      });
+
+      uploadArea.addEventListener("dragleave", () => {
+        uploadArea.classList.remove("dragover");
+      });
+
+      uploadArea.addEventListener("drop", (e) => {
+        e.preventDefault();
+        uploadArea.classList.remove("dragover");
+        handleFile(e.dataTransfer.files[0]);
+      });
+
+      // 重新选择按钮
+      reSelectBtn.addEventListener("click", () => {
+        selectedFile = null;
+        fileInput.value = "";
+        preview.classList.remove("show");
+        uploadArea.style.display = "block";
+        reSelectBtn.classList.add("hidden");
+        processBtn.disabled = true;
+        hideMessage();
+      });
+
+      // 处理文件
+      function handleFile(file) {
+        if (!file) return;
+
+        // 验证文件类型
+        const allowedTypes = ["image/jpeg", "image/jpg", "image/png"];
+        if (!allowedTypes.includes(file.type)) {
+          showMessage("请上传 JPG/PNG 格式的图片", "error");
+          return;
+        }
+
+        // 验证文件大小
+        if (file.size > 16 * 1024 * 1024) {
+          showMessage("文件太大，请上传小于 16MB 的图片", "error");
+          return;
+        }
+
+        selectedFile = file;
+
+        // 显示预览
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          previewImage.src = e.target.result;
+          preview.classList.add("show");
+          uploadArea.style.display = "none";
+          reSelectBtn.classList.remove("hidden");
+
+          // 获取图片信息
+          const img = new Image();
+          img.onload = () => {
+            previewInfo.textContent = `${img.width} × ${img.height} 像素 · ${(
+              file.size / 1024
+            ).toFixed(1)} KB`;
+
+            // 检查尺寸
+            if (img.width < 295 || img.height < 413) {
+              showMessage("⚠️ 照片尺寸不符合要求（需≥295×413像素）", "error");
+              processBtn.disabled = true;
+            } else {
+              processBtn.disabled = false;
+              hideMessage();
+            }
+          };
+          img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+      }
+
+      // 处理照片
+      processBtn.addEventListener("click", async () => {
+        if (!selectedFile) return;
+
+        loading.classList.add("show");
+        processBtn.disabled = true;
+        hideMessage();
+
+        const formData = new FormData();
+        formData.append("photo", selectedFile);
+
+        try {
+          const response = await fetch("/upload", {
+            method: "POST",
+            body: formData,
+          });
+
+          if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.error || "处理失败");
+          }
+
+          // 下载处理后的文件
+          const blob = await response.blob();
+          const url = window.URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = "报名照片.jpg";
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          window.URL.revokeObjectURL(url);
+
+          showMessage("✓ 处理成功！照片已下载", "success");
+        } catch (error) {
+          showMessage(`✗ ${error.message}`, "error");
+        } finally {
+          loading.classList.remove("show");
+          processBtn.disabled = false;
+        }
+      });
+
+      // 显示消息
+      function showMessage(text, type) {
+        message.textContent = text;
+        message.className = `message ${type} show`;
+      }
+
+      // 隐藏消息
+      function hideMessage() {
+        message.classList.remove("show");
+      }
+    </script>
+  </body>
+</html>

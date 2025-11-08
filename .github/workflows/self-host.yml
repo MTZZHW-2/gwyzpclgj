@@ -1,0 +1,27 @@
+name: Self Host
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: SSH and execute commands on server
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          password: ${{ secrets.SSH_PASSWORD }}
+          command_timeout: 30m
+          script: |
+            cd ${{ secrets.SSH_MAIN_DIRECTORY }}
+            git pull origin main
+            make build-all
+            make down
+            make up
+            docker builder prune -af
